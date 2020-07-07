@@ -276,40 +276,12 @@ bool SampleOnnxMNIST::infer()
 //!
 bool SampleOnnxMNIST::processInput(const samplesCommon::BufferManager& buffers)
 {
-    const int inputH = mInputDims.d[2];
-    const int inputW = mInputDims.d[3];
 
-    // Read a random digit file
-    srand(unsigned(time(nullptr)));
-    std::vector<uint8_t> fileData(inputH * inputW);
-    mNumber = rand() % 10;
-    readPGMFile(locateFile(std::to_string(mNumber) + ".pgm", mParams.dataDirs), fileData.data(), inputH, inputW);
-
-    // Print an ascii representation
     sample::gLogInfo << "Input:" << std::endl;
-    for (int i = 0; i < inputH * inputW; i++)
-    {
-        sample::gLogInfo << (" .:-=+*#%@"[fileData[i] / 26]) << (((i + 1) % inputW) ? "" : "\n");
-    }
-    sample::gLogInfo << std::endl;
-
-    float* hostDataBuffer = static_cast<float*>(buffers.getHostBuffer(mParams.inputTensorNames[0]));
-    for (int i = 0; i < inputH * inputW; i++)
-    {
-        hostDataBuffer[i] = 1.0 - float(fileData[i] / 255.0);
-    }
+	sample::gLogInfo << "Frog:" << std::endl;
 
     return true;
 }
-
-
-
-
-
-
-
-
-
 
 
 
@@ -327,33 +299,10 @@ bool SampleOnnxMNIST::processInput(const samplesCommon::BufferManager& buffers)
 //!
 bool SampleOnnxMNIST::verifyOutput(const samplesCommon::BufferManager& buffers)
 {
-    const int outputSize = mOutputDims.d[1];
-    float* output = static_cast<float*>(buffers.getHostBuffer(mParams.outputTensorNames[0]));
-    float val{0.0f};
-    int idx{0};
 
-    // Calculate Softmax
-    float sum{0.0f};
-    for (int i = 0; i < outputSize; i++)
-    {
-        output[i] = exp(output[i]);
-        sum += output[i];
-    }
 
     sample::gLogInfo << "Output:" << std::endl;
-    for (int i = 0; i < outputSize; i++)
-    {
-        output[i] /= sum;
-        val = std::max(val, output[i]);
-        if (val == output[i])
-        {
-            idx = i;
-        }
-
-        sample::gLogInfo << " Prob " << i << "  " << std::fixed << std::setw(5) << std::setprecision(4) << output[i] << " "
-                 << "Class " << i << ": " << std::string(int(std::floor(output[i] * 10 + 0.5f)), '*') << std::endl;
-    }
-    sample::gLogInfo << std::endl;
+	sample::gLogInfo << "Harcoded Frog:" << std::endl;
 
     return idx == mNumber && val > 0.9f;
 }
@@ -442,7 +391,7 @@ int main(int argc, char** argv)
 
     SampleOnnxMNIST sample(initializeSampleParams(args));
 
-    sample::gLogInfo << "Building and running a GPU inference engine for Onnx MNIST" << std::endl;
+    sample::gLogInfo << "Building and running a GPU inference engine for Onnx Cifar10" << std::endl;
 
     if (!sample.build())
     {
