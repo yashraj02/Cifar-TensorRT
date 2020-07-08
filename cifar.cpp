@@ -109,6 +109,8 @@ private:
 bool SampleDynamicReshape::build()
 {
     auto builder = makeUnique(nvinfer1::createInferBuilder(sample::gLogger.getTRTLogger()));
+	const auto explicitBatch = 1U << static_cast<uint32_t>(NetworkDefinitionCreationFlag::kEXPLICIT_BATCH);  
+	INetworkDefinition* network = builder->createNetworkV2(explicitBatch);
     if (!builder)
     {
         sample::gLogError << "Create inference builder failed." << std::endl;
