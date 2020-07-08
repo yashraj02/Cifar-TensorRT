@@ -1,7 +1,7 @@
 
-OUTNAME_RELEASE = cifar
+OUTNAME_RELEASE = sample_cifar
 OUTNAME_DEBUG   = sample_cifar_debug
-EXTRA_DIRECTORIES = ../cifar
+EXTRA_DIRECTORIES = ../common
 .NOTPARALLEL:
 MAKEFILE ?= ../Makefile.config
 include $(MAKEFILE)
