@@ -109,11 +109,9 @@ private:
 bool SampleDynamicReshape::build()
 {
     auto builder = makeUnique(nvinfer1::createInferBuilder(sample::gLogger.getTRTLogger()));
-	const auto explicitBatch = 1U << static_cast<uint32_t>(NetworkDefinitionCreationFlag::kEXPLICIT_BATCH);  
-	INetworkDefinition* network = builder->createNetworkV2(explicitBatch);
     if (!builder)
     {
-        sample::gLogError << "Create inference builder failed." << std::endl;
+        sample::gLogError << "Create inference builder failed1." << std::endl;
         return false;
     }
     // This function will also set mPredictionInputDims and mPredictionOutputDims,
@@ -133,7 +131,7 @@ bool SampleDynamicReshape::buildPreprocessorEngine(const SampleUniquePtr<nvinfer
         builder->createNetworkV2(1U << static_cast<uint32_t>(NetworkDefinitionCreationFlag::kEXPLICIT_BATCH)));
     if (!preprocessorNetwork)
     {
-        sample::gLogError << "Create network failed." << std::endl;
+        sample::gLogError << "Create network failed2." << std::endl;
         return false;
     }
 
@@ -147,7 +145,7 @@ bool SampleDynamicReshape::buildPreprocessorEngine(const SampleUniquePtr<nvinfer
     auto preprocessorConfig = makeUnique(builder->createBuilderConfig());
     if (!preprocessorConfig)
     {
-        sample::gLogError << "Create builder config failed." << std::endl;
+        sample::gLogError << "Create builder config failed3." << std::endl;
         return false;
     }
 
@@ -185,7 +183,7 @@ bool SampleDynamicReshape::buildPreprocessorEngine(const SampleUniquePtr<nvinfer
     mPreprocessorEngine = makeUnique(builder->buildEngineWithConfig(*preprocessorNetwork, *preprocessorConfig));
     if (!mPreprocessorEngine)
     {
-        sample::gLogError << "Preprocessor engine build failed." << std::endl;
+        sample::gLogError << "Preprocessor engine build failed4." << std::endl;
         return false;
     }
     sample::gLogInfo << "Profile dimensions in preprocessor engine:" << std::endl;
@@ -214,7 +212,7 @@ bool SampleDynamicReshape::buildPredictionEngine(const SampleUniquePtr<nvinfer1:
     auto network = makeUnique(builder->createNetworkV2(explicitBatch));
     if (!network)
     {
-        sample::gLogError << "Create network failed." << std::endl;
+        sample::gLogError << "Create network failed5." << std::endl;
         return false;
     }
 
@@ -223,7 +221,7 @@ bool SampleDynamicReshape::buildPredictionEngine(const SampleUniquePtr<nvinfer1:
         static_cast<int>(sample::gLogger.getReportableSeverity()));
     if (!parsingSuccess)
     {
-        sample::gLogError << "Failed to parse model." << std::endl;
+        sample::gLogError << "Failed6 to parse model." << std::endl;
         return false;
     }
 
@@ -242,7 +240,7 @@ bool SampleDynamicReshape::buildPredictionEngine(const SampleUniquePtr<nvinfer1:
     auto config = makeUnique(builder->createBuilderConfig());
     if (!config)
     {
-        sample::gLogError << "Create builder config failed." << std::endl;
+        sample::gLogError << "Create builder config failed7." << std::endl;
         return false;
     }
     config->setMaxWorkspaceSize(16_MiB);
@@ -275,7 +273,7 @@ bool SampleDynamicReshape::buildPredictionEngine(const SampleUniquePtr<nvinfer1:
     mPredictionEngine = makeUnique(builder->buildEngineWithConfig(*network, *config));
     if (!mPredictionEngine)
     {
-        sample::gLogError << "Prediction engine build failed." << std::endl;
+        sample::gLogError << "Prediction engine build failed8." << std::endl;
         return false;
     }
     return true;
@@ -295,14 +293,14 @@ bool SampleDynamicReshape::prepare()
     mPreprocessorContext = makeUnique(mPreprocessorEngine->createExecutionContext());
     if (!mPreprocessorContext)
     {
-        sample::gLogError << "Preprocessor context build failed." << std::endl;
+        sample::gLogError << "Preprocessor context build failed10." << std::endl;
         return false;
     }
 
     mPredictionContext = makeUnique(mPredictionEngine->createExecutionContext());
     if (!mPredictionContext)
     {
-        sample::gLogError << "Prediction context build failed." << std::endl;
+        sample::gLogError << "Prediction context build failed11." << std::endl;
         return false;
     }
 
