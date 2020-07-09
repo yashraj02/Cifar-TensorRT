@@ -237,8 +237,8 @@ bool SampleOnnxMNIST::infer()
 //!
 bool SampleOnnxMNIST::processInput(const samplesCommon::BufferManager& buffers)
 {
-    const int inputH = mInputDims.d[2];
-    const int inputW = mInputDims.d[3];
+    const int inputH = mInputDims.d[32];
+    const int inputW = mInputDims.d[32];
 
     // Read a random digit file
     srand(unsigned(time(nullptr)));
