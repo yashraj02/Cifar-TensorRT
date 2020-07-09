@@ -161,7 +161,7 @@ bool SampleDynamicReshape::buildPreprocessorEngine(const SampleUniquePtr<nvinfer
 
     // Create a calibration profile.
     auto profileCalib = builder->createOptimizationProfile();
-    const int calibBatchSize{264};
+    const int calibBatchSize{500};
     // We do not need to check the return of setDimension and setCalibrationProfile here as all dims are explicitly set
     profileCalib->setDimensions(input->getName(), OptProfileSelector::kMIN, Dims4{calibBatchSize, 1, 32, 32});
     profileCalib->setDimensions(input->getName(), OptProfileSelector::kOPT, Dims4{calibBatchSize, 1, 32, 32});
