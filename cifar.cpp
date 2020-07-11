@@ -116,6 +116,7 @@ bool SampleDynamicReshape::build()
     }
     // This function will also set mPredictionInputDims and mPredictionOutputDims,
     // so it needs to be called before building the preprocessor.
+	sample::gLogError << "Before calling preprcessing method 1" << std::endl;
     return buildPredictionEngine(builder) && buildPreprocessorEngine(builder);
 }
 
