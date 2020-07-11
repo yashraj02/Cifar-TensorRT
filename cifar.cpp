@@ -40,12 +40,12 @@ int main(int argc, char** argv) {
 
 	std::vector<IExecutionContext*> contexts;
 	
-	
-	sample::gLogError << "NbOptimizationProfiles: "<< engine->getNbOptimizationProfiles() << std::endl;
-	sample::gLogError << "NbEngineBindings: " << engine->getNbBindings() << std::endl;
-	sample::gLogError << "[" << input_name << "] Input Binding Index: " << engine->getBindingIndex(input_name.c_str()) << std::endl;
+	        
+	sample::gLogInfo << "NbOptimizationProfiles: "<< engine->getNbOptimizationProfiles() << std::endl;
+	sample::gLogInfo << "NbEngineBindings: " << engine->getNbBindings() << std::endl;
+	sample::gLogInfo << "[" << input_name << "] Input Binding Index: " << engine->getBindingIndex(input_name.c_str()) << std::endl;
 	for (int binding=0; binding < engine->getNbBindings(); binding++) {
-		sample::gLogError << "Binding " << binding << ": " << engine->getBindingName(binding) << std::endl;
+		sample::gLogInfo << "Binding " << binding << ": " << engine->getBindingName(binding) << std::endl;
 	}
 	
   for (int i=0; i<2; ++i){
