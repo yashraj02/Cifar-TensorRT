@@ -265,6 +265,7 @@ bool SampleDynamicReshape::buildPredictionEngine(const SampleUniquePtr<nvinfer1:
     config->setCalibrationProfile(profileCalib);
 
     std::unique_ptr<IInt8Calibrator> calibrator;
+	sample::gLogError << mParams.int8 << std::endl;
     if (mParams.int8)
     {
 		sample::gLogError << "Inside config" << std::endl;
