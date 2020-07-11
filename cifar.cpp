@@ -39,6 +39,14 @@ int main(int argc, char** argv) {
   auto engine = builder->buildEngineWithConfig(*network,*config);
 
 	std::vector<IExecutionContext*> contexts;
+	
+	std::cout << "NbOptimizationProfiles: "<< engine->getNbOptimizationProfiles() << std::endl;
+	std::cout << "NbEngineBindings: " << engine->getNbBindings() << std::endl;
+	std::cout << "[" << input_name << "] Input Binding Index: " << engine->getBindingIndex(input_name.c_str()) << std::endl;
+	for (int binding=0; binding < engine->getNbBindings(); binding++) {
+		std::cout << "Binding " << binding << ": " << engine->getBindingName(binding) << std::endl;
+	}
+	
   for (int i=0; i<2; ++i){
     contexts.emplace_back(engine->createExecutionContext());
     auto context = contexts.back();
