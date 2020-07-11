@@ -176,7 +176,7 @@ bool SampleDynamicReshape::buildPreprocessorEngine(const SampleUniquePtr<nvinfer
     std::unique_ptr<IInt8Calibrator> calibrator;
     if (mParams.int8)
     {	
-		sample::gLogInfo << "Entered 1" << std::endl;
+		sample::gLogError << "Entered 1" << std::endl;
         preprocessorConfig->setFlag(BuilderFlag::kINT8);
         const int nCalibBatches{10};
         MNISTBatchStream calibrationStream(
@@ -184,7 +184,7 @@ bool SampleDynamicReshape::buildPreprocessorEngine(const SampleUniquePtr<nvinfer
         calibrator.reset(
             new Int8EntropyCalibrator2<MNISTBatchStream>(calibrationStream, 0, "MNISTPreprocessor", "input"));
         preprocessorConfig->setInt8Calibrator(calibrator.get());
-		sample::gLogInfo << "Passed 1" << std::endl;
+		sample::gLogError << "Passed 1" << std::endl;
     }
 
     mPreprocessorEngine = makeUnique(builder->buildEngineWithConfig(*preprocessorNetwork, *preprocessorConfig));
@@ -270,7 +270,7 @@ bool SampleDynamicReshape::buildPredictionEngine(const SampleUniquePtr<nvinfer1:
 	sample::gLogError << mParams.int8 << std::endl;
     if (mParams.int8)
     {
-		sample::gLogInfo << "Entered 2" << std::endl;
+		sample::gLogError << "Entered 2" << std::endl;
 		sample::gLogError << "Inside config" << std::endl;
 		config->setFlag(BuilderFlag::kINT8);
         int nCalibBatches{500};
@@ -279,7 +279,7 @@ bool SampleDynamicReshape::buildPredictionEngine(const SampleUniquePtr<nvinfer1:
         calibrator.reset(
             new Int8EntropyCalibrator2<MNISTBatchStream>(calibrationStream, 0, "MNISTPrediction", inputName));
         config->setInt8Calibrator(calibrator.get());
-		sample::gLogInfo << "Entered 2" << std::endl;
+		sample::gLogError << "Entered 2" << std::endl;
     }
     // Build the prediciton engine.
     mPredictionEngine = makeUnique(builder->buildEngineWithConfig(*network, *config));
