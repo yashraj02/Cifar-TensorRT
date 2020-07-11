@@ -34,7 +34,6 @@
 #include "NvInfer.h"
 #include <cuda_runtime_api.h>
 #include <random>
-calibBatchSize
 
 const std::string gSampleName = "TensorRT.sample_cifar";
 
