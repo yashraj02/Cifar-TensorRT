@@ -18,7 +18,7 @@ using namespace nvinfer1;
 std::string model_path = "data/cifar/cifar.onnx";
 
 int main(int argc, char** argv) {
-  auto builder = createInferBuilder(gLogger);
+  auto builder = createInferBuilder(sample::gLogger.getTRTLogger());
 
   auto config = builder->createBuilderConfig();
   Dims4 dims1(1,10,10,1);
@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
   }
 
   auto network = builder->createNetworkV2(1U << static_cast<int>(NetworkDefinitionCreationFlag::kEXPLICIT_BATCH));
-  auto parser = nvonnxparser::createParser(*network, gLogger);
+  auto parser = nvonnxparser::createParser(*network, sample::gLogger.getTRTLogger());
   parser->parseFromFile(model_path.c_str(), 3);
   auto engine = builder->buildEngineWithConfig(*network,*config);
 
