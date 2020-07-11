@@ -148,16 +148,20 @@ bool SampleDynamicReshape::buildPreprocessorEngine(const SampleUniquePtr<nvinfer
         sample::gLogError << "Create builder config failed3." << std::endl;
         return false;
     }
-
+	sample::gLogError << "Approaching in method" << std::endl;
     // Create an optimization profile so that we can specify a range of input dimensions.
     auto profile = builder->createOptimizationProfile();
     // This profile will be valid for all images whose size falls in the range of [(1, 1, 1, 1), (1, 1, 64, 64)]
     // but TensorRT will optimize for (1, 1, 32, 32)
     // We do not need to check the return of setDimension and addOptimizationProfile here as all dims are explicitly set
     profile->setDimensions(input->getName(), OptProfileSelector::kMIN, Dims4{1, 1, 1, 1});
+	sample::gLogError << "Passed min" << std::endl;
     profile->setDimensions(input->getName(), OptProfileSelector::kOPT, Dims4{1, 1, 32, 32});
+	sample::gLogError << "Passed mid" << std::endl;
     profile->setDimensions(input->getName(), OptProfileSelector::kMAX, Dims4{1, 1, 64, 64});
+	sample::gLogError << "Passed max" << std::endl;
     preprocessorConfig->addOptimizationProfile(profile);
+	
 
     // Create a calibration profile.
     auto profileCalib = builder->createOptimizationProfile();
