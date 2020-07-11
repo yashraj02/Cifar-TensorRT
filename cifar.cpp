@@ -102,7 +102,8 @@ private:
 //!
 bool SampleOnnxMNIST::build()
 {
-    auto builder = SampleUniquePtr<nvinfer1::IBuilder>(nvinfer1::createInferBuilder(sample::gLogger.getTRTLogger()));
+    sample::gLogError << "1" << std::endl;
+	auto builder = SampleUniquePtr<nvinfer1::IBuilder>(nvinfer1::createInferBuilder(sample::gLogger.getTRTLogger()));
     if (!builder)
     {
         return false;
@@ -164,7 +165,8 @@ bool SampleOnnxMNIST::constructNetwork(SampleUniquePtr<nvinfer1::IBuilder>& buil
     SampleUniquePtr<nvinfer1::INetworkDefinition>& network, SampleUniquePtr<nvinfer1::IBuilderConfig>& config,
     SampleUniquePtr<nvonnxparser::IParser>& parser)
 {
-    auto parsed = parser->parseFromFile(locateFile(mParams.onnxFileName, mParams.dataDirs).c_str(),
+    sample::gLogError << "2" << std::endl;
+	auto parsed = parser->parseFromFile(locateFile(mParams.onnxFileName, mParams.dataDirs).c_str(),
         static_cast<int>(sample::gLogger.getReportableSeverity()));
     if (!parsed)
     {
@@ -195,6 +197,7 @@ bool SampleOnnxMNIST::constructNetwork(SampleUniquePtr<nvinfer1::IBuilder>& buil
 //!
 bool SampleOnnxMNIST::infer()
 {
+	sample::gLogError << "3" << std::endl;
     // Create RAII buffer manager object
     samplesCommon::BufferManager buffers(mEngine);
 
@@ -237,7 +240,8 @@ bool SampleOnnxMNIST::infer()
 //!
 bool SampleOnnxMNIST::processInput(const samplesCommon::BufferManager& buffers)
 {
-    const int inputH = mInputDims.d[32];
+    sample::gLogError << "4" << std::endl;
+	const int inputH = mInputDims.d[32];
     const int inputW = mInputDims.d[32];
 
     // Read a random digit file
@@ -270,7 +274,8 @@ bool SampleOnnxMNIST::processInput(const samplesCommon::BufferManager& buffers)
 //!
 bool SampleOnnxMNIST::verifyOutput(const samplesCommon::BufferManager& buffers)
 {
-    const int outputSize = mOutputDims.d[1];
+    sample::gLogError << "5" << std::endl;
+	const int outputSize = mOutputDims.d[1];
     float* output = static_cast<float*>(buffers.getHostBuffer(mParams.outputTensorNames[0]));
     float val{0.0f};
     int idx{0};
@@ -308,7 +313,8 @@ bool SampleOnnxMNIST::verifyOutput(const samplesCommon::BufferManager& buffers)
 //!
 samplesCommon::OnnxSampleParams initializeSampleParams(const samplesCommon::Args& args)
 {
-    samplesCommon::OnnxSampleParams params;
+    sample::gLogError << "6" << std::endl;
+	samplesCommon::OnnxSampleParams params;
     if (args.dataDirs.empty()) //!< Use default directories if user hasn't provided directory paths
     {
         params.dataDirs.push_back("data/cifar/");
@@ -333,11 +339,13 @@ samplesCommon::OnnxSampleParams initializeSampleParams(const samplesCommon::Args
 //!
 void printHelpInfo()
 {
-    std::cout
+    sample::gLogError << "7" << std::endl;
+	std::cout
         << "Usage: ./sample_onnx_mnist [-h or --help] [-d or --datadir=<path to data directory>] [--useDLACore=<int>]"
         << std::endl;
     std::cout << "--help          Display help information" << std::endl;
     std::cout << "--datadir       Specify path to a data directory, overriding the default. This option can be used "
+                 "multiple times to add multiple directories. If no data directories are given, the default is to use "
                  "multiple times to add multiple directories. If no data directories are given, the default is to use "
                  "(data/samples/mnist/, data/mnist/)"
               << std::endl;
@@ -350,7 +358,8 @@ void printHelpInfo()
 
 int main(int argc, char** argv)
 {
-    samplesCommon::Args args;
+    sample::gLogError << "8" << std::endl;
+	samplesCommon::Args args;
     bool argsOK = samplesCommon::parseArgs(args, argc, argv);
     if (!argsOK)
     {
