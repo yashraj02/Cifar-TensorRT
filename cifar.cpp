@@ -268,7 +268,7 @@ bool SampleDynamicReshape::buildPredictionEngine(const SampleUniquePtr<nvinfer1:
     if (mParams.int8)
     {
         config->setFlag(BuilderFlag::kINT8);
-        int nCalibBatches{10};
+        int nCalibBatches{500};
         MNISTBatchStream calibrationStream(
             calibBatchSize, nCalibBatches, "images", "labels", mParams.dataDirs);
         calibrator.reset(
