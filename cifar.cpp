@@ -15,7 +15,7 @@
 using namespace nvinfer1;
 
 
-std::string model_path = "data/cifar/cifar.onnx";
+std::string model_path = "/workspace/tensorrt/data/cifar/cifar.onnx";
 
 int main(int argc, char** argv) {
   auto builder = createInferBuilder(sample::gLogger.getTRTLogger());
@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
   Dims4 dims1(1,10,10,1);
   Dims4 dims2(1,100,100,1);
   Dims4 dims3(1,200,200,1);
-  std::string input_name = "fts_input_images:0";
+  std::string input_name = "x";
   for (int i=0; i<2; ++i){
     auto profile = builder->createOptimizationProfile();
     profile->setDimensions(input_name.c_str(), OptProfileSelector::kMIN, dims1);
