@@ -273,9 +273,12 @@ bool SampleDynamicReshape::buildPredictionEngine(const SampleUniquePtr<nvinfer1:
 		sample::gLogError << "Entered 2" << std::endl;
 		sample::gLogError << "Inside config" << std::endl;
 		config->setFlag(BuilderFlag::kINT8);
+		sample::gLogError << "1" << std::endl;
         int nCalibBatches{500};
+		sample::gLogError << "2" << std::endl;
         MNISTBatchStream calibrationStream(
             calibBatchSize, nCalibBatches, "images", "labels", mParams.dataDirs);
+		sample::gLogError << "3" << std::endl;	
         calibrator.reset(
             new Int8EntropyCalibrator2<MNISTBatchStream>(calibrationStream, 0, "MNISTPrediction", inputName));
         config->setInt8Calibrator(calibrator.get());
