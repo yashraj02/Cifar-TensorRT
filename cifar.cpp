@@ -136,8 +136,8 @@ bool SampleDynamicReshape::buildPreprocessorEngine(const SampleUniquePtr<nvinfer
         return false;
     }
 
-    // Reshape a dynamically shaped input to the size expected by the model, (1, 1, 32, 32).
-    auto input = preprocessorNetwork->addInput("input", nvinfer1::DataType::kFLOAT, Dims4{-1, 1, -1, -1});
+    // Reshape a dynamically shaped input to the size expected by the model, (1, 32, 32, 3).
+    auto input = preprocessorNetwork->addInput("input", nvinfer1::DataType::kFLOAT, Dims4{-1, -1, -1, 3});
     auto resizeLayer = preprocessorNetwork->addResize(*input);
     resizeLayer->setOutputDimensions(mPredictionInputDims);
     preprocessorNetwork->markOutput(*resizeLayer->getOutput(0));
@@ -152,14 +152,14 @@ bool SampleDynamicReshape::buildPreprocessorEngine(const SampleUniquePtr<nvinfer
 	sample::gLogError << "Approaching in method" << std::endl;
     // Create an optimization profile so that we can specify a range of input dimensions.
     auto profile = builder->createOptimizationProfile();
-    // This profile will be valid for all images whose size falls in the range of [(1, 1, 1, 1), (1, 1, 64, 64)]
-    // but TensorRT will optimize for (1, 1, 32, 32)
+    // This profile will be valid for all images whose size falls in the range of [(1, 1, 1, 1), (1, 64, 64, 3)]
+    // but TensorRT will optimize for (1, 32, 32, 3)
     // We do not need to check the return of setDimension and addOptimizationProfile here as all dims are explicitly set
     profile->setDimensions(input->getName(), OptProfileSelector::kMIN, Dims4{1, 1, 1, 1});
 	sample::gLogError << "Passed min" << std::endl;
-    profile->setDimensions(input->getName(), OptProfileSelector::kOPT, Dims4{1, 1, 32, 32});
+    profile->setDimensions(input->getName(), OptProfileSelector::kOPT, Dims4{1, 32, 32, 3});
 	sample::gLogError << "Passed mid" << std::endl;
-    profile->setDimensions(input->getName(), OptProfileSelector::kMAX, Dims4{1, 1, 64, 64});
+    profile->setDimensions(input->getName(), OptProfileSelector::kMAX, Dims4{1, 64, 64, 3});
 	sample::gLogError << "Passed max" << std::endl;
     preprocessorConfig->addOptimizationProfile(profile);
 	
@@ -168,9 +168,9 @@ bool SampleDynamicReshape::buildPreprocessorEngine(const SampleUniquePtr<nvinfer
     auto profileCalib = builder->createOptimizationProfile();
     const int calibBatchSize{5};
     // We do not need to check the return of setDimension and setCalibrationProfile here as all dims are explicitly set
-    profileCalib->setDimensions(input->getName(), OptProfileSelector::kMIN, Dims4{1, 1, 32, 32});
-    profileCalib->setDimensions(input->getName(), OptProfileSelector::kOPT, Dims4{16, 1, 32, 32});
-    profileCalib->setDimensions(input->getName(), OptProfileSelector::kMAX, Dims4{32, 1, 32, 32});
+    profileCalib->setDimensions(input->getName(), OptProfileSelector::kMIN, Dims4{1, 32, 32, 3});
+    profileCalib->setDimensions(input->getName(), OptProfileSelector::kOPT, Dims4{16, 32, 32, 3});
+    profileCalib->setDimensions(input->getName(), OptProfileSelector::kMAX, Dims4{32, 32, 32, 3});
     preprocessorConfig->setCalibrationProfile(profileCalib);
 
     std::unique_ptr<IInt8Calibrator> calibrator;
@@ -261,9 +261,9 @@ bool SampleDynamicReshape::buildPredictionEngine(const SampleUniquePtr<nvinfer1:
     const auto inputName = mParams.inputTensorNames[0].c_str();
     const int calibBatchSize{5};
     // We do not need to check the return of setDimension and setCalibrationProfile here as all dims are explicitly set
-    profileCalib->setDimensions(inputName, OptProfileSelector::kMIN, Dims4{1, 1, 32, 32});
-    profileCalib->setDimensions(inputName, OptProfileSelector::kOPT, Dims4{16, 1, 32, 32});
-    profileCalib->setDimensions(inputName, OptProfileSelector::kMAX, Dims4{32, 1, 32, 32});
+    profileCalib->setDimensions(inputName, OptProfileSelector::kMIN, Dims4{1, 32, 32, 3});
+    profileCalib->setDimensions(inputName, OptProfileSelector::kOPT, Dims4{16, 32, 32, 3});
+    profileCalib->setDimensions(inputName, OptProfileSelector::kMAX, Dims4{32, 32, 32, 3});
     config->setCalibrationProfile(profileCalib);
 
     std::unique_ptr<IInt8Calibrator> calibrator;
@@ -399,7 +399,7 @@ Dims SampleDynamicReshape::loadPGMFile(const std::string& fileName)
     infile >> magic >> h >> w >> max;
 
     infile.seekg(1, infile.cur);
-    Dims4 inputDims{1, 1, h, w};
+    Dims4 inputDims{1, h, w, 3};
     size_t vol = samplesCommon::volume(inputDims);
     std::vector<uint8_t> fileData(vol);
     infile.read(reinterpret_cast<char*>(fileData.data()), vol);
