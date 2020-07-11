@@ -353,7 +353,7 @@ bool SampleDynamicReshape::infer()
         mInput.deviceBuffer.data(), mInput.hostBuffer.data(), mInput.hostBuffer.nbBytes(), cudaMemcpyHostToDevice));
 
     // Set the input size for the preprocessor
-    CHECK_RETURN_W_MSG(mPreprocessorContext->setBindingDimensions(0, inputDims), false, "Invalid binding dimensions.");
+    CHECK_RETURN_W_MSG(mPreprocessorContext->setBindingDimensions(1, inputDims), false, "Invalid binding dimensions.");
 
     // We can only run inference once all dynamic input shapes have been specified.
     if (!mPreprocessorContext->allInputDimensionsSpecified())
