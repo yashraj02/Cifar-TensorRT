@@ -21,9 +21,9 @@ int main(int argc, char** argv) {
   auto builder = createInferBuilder(sample::gLogger.getTRTLogger());
 
   auto config = builder->createBuilderConfig();
-  Dims4 dims1(1,10,10,1);
-  Dims4 dims2(1,100,100,1);
-  Dims4 dims3(1,200,200,1);
+  Dims4 dims1(1,10,10,3);
+  Dims4 dims2(1,32,32,3);
+  Dims4 dims3(1,32,64,3);
   std::string input_name = "x";
   for (int i=0; i<2; ++i){
     auto profile = builder->createOptimizationProfile();
