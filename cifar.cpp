@@ -1,10 +1,19 @@
+#include "BatchStream.h"
+#include "EntropyCalibrator.h"
+#include "argsParser.h"
+#include "buffers.h"
+#include "common.h"
+#include "logger.h"
+#include "parserOnnxConfig.h"
 #include "NvInfer.h"
+#include <cuda_runtime_api.h>
+#include <random>
+
 #include <iostream>
 #include "NvUtils.h"
 #include "NvOnnxParser.h"
 using namespace nvinfer1;
 
-#include "common/logger.h"
 
 std::string model_path = "data/cifar/cifar.onnx";
 
