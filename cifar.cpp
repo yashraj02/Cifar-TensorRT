@@ -137,7 +137,7 @@ bool SampleDynamicReshape::buildPreprocessorEngine(const SampleUniquePtr<nvinfer
     }
 
     // Reshape a dynamically shaped input to the size expected by the model, (1, 1, 32, 32).
-    auto input = preprocessorNetwork->addInput("input", nvinfer1::DataType::kFLOAT, Dims4{-1, 1, -1, -1});
+    auto input = preprocessorNetwork->addInput("conv2d_input:0", nvinfer1::DataType::kFLOAT, Dims4{-1, 1, -1, -1});
     auto resizeLayer = preprocessorNetwork->addResize(*input);
     resizeLayer->setOutputDimensions(mPredictionInputDims);
     preprocessorNetwork->markOutput(*resizeLayer->getOutput(0));
