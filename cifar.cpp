@@ -261,9 +261,9 @@ bool SampleDynamicReshape::buildPredictionEngine(const SampleUniquePtr<nvinfer1:
     const auto inputName = mParams.inputTensorNames[0].c_str();
     const int calibBatchSize{5};
     // We do not need to check the return of setDimension and setCalibrationProfile here as all dims are explicitly set
-    profileCalib->setDimensions(inputName, OptProfileSelector::kMIN, Dims4{1, 1, 32, 32});
-    profileCalib->setDimensions(inputName, OptProfileSelector::kOPT, Dims4{16, 1, 32, 32});
-    profileCalib->setDimensions(inputName, OptProfileSelector::kMAX, Dims4{32, 1, 32, 32});
+    profileCalib->setDimensions(inputName, OptProfileSelector::kMIN, Dims4{1, 32, 32, 3});
+    profileCalib->setDimensions(inputName, OptProfileSelector::kOPT, Dims4{16, 32, 32, 3});
+    profileCalib->setDimensions(inputName, OptProfileSelector::kMAX, Dims4{32, 32, 32, 3});
     config->setCalibrationProfile(profileCalib);
 
     std::unique_ptr<IInt8Calibrator> calibrator;
