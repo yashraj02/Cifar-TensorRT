@@ -137,7 +137,7 @@ bool SampleDynamicReshape::buildPreprocessorEngine(const SampleUniquePtr<nvinfer
     }
 
     // Reshape a dynamically shaped input to the size expected by the model, (1, 1, 32, 32).
-    auto input = preprocessorNetwork->addInput("conv2d_input:0", nvinfer1::DataType::kFLOAT, Dims4{-1, 1, -1, -1});
+    auto input = preprocessorNetwork->addInput("conv2d_input:0", nvinfer1::DataType::kFLOAT, Dims4{1, 32, 32, 3});
     auto resizeLayer = preprocessorNetwork->addResize(*input);
     resizeLayer->setOutputDimensions(mPredictionInputDims);
     preprocessorNetwork->markOutput(*resizeLayer->getOutput(0));
@@ -155,11 +155,11 @@ bool SampleDynamicReshape::buildPreprocessorEngine(const SampleUniquePtr<nvinfer
     // This profile will be valid for all images whose size falls in the range of [(1, 1, 1, 1), (1, 1, 64, 64)]
     // but TensorRT will optimize for (1, 1, 32, 32)
     // We do not need to check the return of setDimension and addOptimizationProfile here as all dims are explicitly set
-    profile->setDimensions(input->getName(), OptProfileSelector::kMIN, Dims4{1, 1, 1, 1});
+    profile->setDimensions(input->getName(), OptProfileSelector::kMIN, Dims4{1, 1, 32, 32});
 	sample::gLogError << "Passed min" << std::endl;
-    profile->setDimensions(input->getName(), OptProfileSelector::kOPT, Dims4{1, 1, 32, 32});
+    profile->setDimensions(input->getName(), OptProfileSelector::kOPT, Dims4{16, 1, 32, 32});
 	sample::gLogError << "Passed mid" << std::endl;
-    profile->setDimensions(input->getName(), OptProfileSelector::kMAX, Dims4{1, 1, 64, 64});
+    profile->setDimensions(input->getName(), OptProfileSelector::kMAX, Dims4{32, 1, 32, 32});
 	sample::gLogError << "Passed max" << std::endl;
     preprocessorConfig->addOptimizationProfile(profile);
 	
