@@ -1,3 +1,28 @@
+/*
+ * Copyright (c) 2020, NVIDIA CORPORATION. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+//!
+//! sampleDynamicReshape.cpp
+//! This file contains the implementation of the dynamic reshape MNIST sample. It creates a network
+//! using the MNIST ONNX model, and uses a second engine to resize inputs to the shape the model
+//! expects.
+//! It can be run with the following command:
+//! Command: ./sample_dynamic_reshape [-h or --help [-d=/path/to/data/dir or --datadir=/path/to/data/dir]
+//!
+
 #include "BatchStream.h"
 #include "EntropyCalibrator.h"
 #include "argsParser.h"
@@ -86,11 +111,12 @@ bool SampleDynamicReshape::build()
     auto builder = makeUnique(nvinfer1::createInferBuilder(sample::gLogger.getTRTLogger()));
     if (!builder)
     {
-        sample::gLogError << "Create inference builder failed." << std::endl;
+        sample::gLogError << "Create inference builder failed1." << std::endl;
         return false;
     }
     // This function will also set mPredictionInputDims and mPredictionOutputDims,
     // so it needs to be called before building the preprocessor.
+	sample::gLogError << "Before calling preprcessing method 1" << std::endl;
     return buildPredictionEngine(builder) && buildPreprocessorEngine(builder);
 }
 
@@ -106,7 +132,7 @@ bool SampleDynamicReshape::buildPreprocessorEngine(const SampleUniquePtr<nvinfer
         builder->createNetworkV2(1U << static_cast<uint32_t>(NetworkDefinitionCreationFlag::kEXPLICIT_BATCH)));
     if (!preprocessorNetwork)
     {
-        sample::gLogError << "Create network failed." << std::endl;
+        sample::gLogError << "Create network failed2." << std::endl;
         return false;
     }
 
@@ -120,45 +146,51 @@ bool SampleDynamicReshape::buildPreprocessorEngine(const SampleUniquePtr<nvinfer
     auto preprocessorConfig = makeUnique(builder->createBuilderConfig());
     if (!preprocessorConfig)
     {
-        sample::gLogError << "Create builder config failed." << std::endl;
+        sample::gLogError << "Create builder config failed3." << std::endl;
         return false;
     }
-
+	sample::gLogError << "Approaching in method" << std::endl;
     // Create an optimization profile so that we can specify a range of input dimensions.
     auto profile = builder->createOptimizationProfile();
-    // This profile will be valid for all images whose size falls in the range of [(1, 1, 1, 1), (1, 1, 56, 56)]
+    // This profile will be valid for all images whose size falls in the range of [(1, 1, 1, 1), (1, 1, 64, 64)]
     // but TensorRT will optimize for (1, 1, 32, 32)
     // We do not need to check the return of setDimension and addOptimizationProfile here as all dims are explicitly set
     profile->setDimensions(input->getName(), OptProfileSelector::kMIN, Dims4{1, 1, 1, 1});
+	sample::gLogError << "Passed min" << std::endl;
     profile->setDimensions(input->getName(), OptProfileSelector::kOPT, Dims4{1, 1, 32, 32});
+	sample::gLogError << "Passed mid" << std::endl;
     profile->setDimensions(input->getName(), OptProfileSelector::kMAX, Dims4{1, 1, 64, 64});
+	sample::gLogError << "Passed max" << std::endl;
     preprocessorConfig->addOptimizationProfile(profile);
+	
 
     // Create a calibration profile.
     auto profileCalib = builder->createOptimizationProfile();
-    const int calibBatchSize{256};
+    const int calibBatchSize{5};
     // We do not need to check the return of setDimension and setCalibrationProfile here as all dims are explicitly set
-    profileCalib->setDimensions(input->getName(), OptProfileSelector::kMIN, Dims4{calibBatchSize, 1, 32, 32});
-    profileCalib->setDimensions(input->getName(), OptProfileSelector::kOPT, Dims4{calibBatchSize, 1, 32, 32});
-    profileCalib->setDimensions(input->getName(), OptProfileSelector::kMAX, Dims4{calibBatchSize, 1, 32, 32});
+    profileCalib->setDimensions(input->getName(), OptProfileSelector::kMIN, Dims4{1, 1, 32, 32});
+    profileCalib->setDimensions(input->getName(), OptProfileSelector::kOPT, Dims4{16, 1, 32, 32});
+    profileCalib->setDimensions(input->getName(), OptProfileSelector::kMAX, Dims4{32, 1, 32, 32});
     preprocessorConfig->setCalibrationProfile(profileCalib);
 
     std::unique_ptr<IInt8Calibrator> calibrator;
     if (mParams.int8)
-    {
+    {	
+		sample::gLogError << "Entered 1" << std::endl;
         preprocessorConfig->setFlag(BuilderFlag::kINT8);
-        const int nCalibBatches{10};
+        const int nCalibBatches{16};
         MNISTBatchStream calibrationStream(
-            calibBatchSize, nCalibBatches, "train-images-idx3-ubyte", "train-labels-idx1-ubyte", mParams.dataDirs);
+            calibBatchSize, nCalibBatches, "images", "labels", mParams.dataDirs);
         calibrator.reset(
             new Int8EntropyCalibrator2<MNISTBatchStream>(calibrationStream, 0, "MNISTPreprocessor", "input"));
         preprocessorConfig->setInt8Calibrator(calibrator.get());
+		sample::gLogError << "Passed 1" << std::endl;
     }
 
     mPreprocessorEngine = makeUnique(builder->buildEngineWithConfig(*preprocessorNetwork, *preprocessorConfig));
     if (!mPreprocessorEngine)
     {
-        sample::gLogError << "Preprocessor engine build failed." << std::endl;
+        sample::gLogError << "Preprocessor engine build failed4." << std::endl;
         return false;
     }
     sample::gLogInfo << "Profile dimensions in preprocessor engine:" << std::endl;
@@ -183,11 +215,12 @@ bool SampleDynamicReshape::buildPreprocessorEngine(const SampleUniquePtr<nvinfer
 bool SampleDynamicReshape::buildPredictionEngine(const SampleUniquePtr<nvinfer1::IBuilder>& builder)
 {
     // Create a network using the parser.
-    const auto explicitBatch = 1U << static_cast<uint32_t>(NetworkDefinitionCreationFlag::kEXPLICIT_BATCH);
+	sample::gLogError << "Inside this method 2" << std::endl;
+	const auto explicitBatch = 1U << static_cast<uint32_t>(NetworkDefinitionCreationFlag::kEXPLICIT_BATCH);
     auto network = makeUnique(builder->createNetworkV2(explicitBatch));
     if (!network)
     {
-        sample::gLogError << "Create network failed." << std::endl;
+        sample::gLogError << "Create network failed5." << std::endl;
         return false;
     }
 
@@ -196,7 +229,7 @@ bool SampleDynamicReshape::buildPredictionEngine(const SampleUniquePtr<nvinfer1:
         static_cast<int>(sample::gLogger.getReportableSeverity()));
     if (!parsingSuccess)
     {
-        sample::gLogError << "Failed to parse model." << std::endl;
+        sample::gLogError << "Failed6 to parse model." << std::endl;
         return false;
     }
 
@@ -215,7 +248,7 @@ bool SampleDynamicReshape::buildPredictionEngine(const SampleUniquePtr<nvinfer1:
     auto config = makeUnique(builder->createBuilderConfig());
     if (!config)
     {
-        sample::gLogError << "Create builder config failed." << std::endl;
+        sample::gLogError << "Create builder config failed7." << std::endl;
         return false;
     }
     config->setMaxWorkspaceSize(16_MiB);
@@ -226,29 +259,36 @@ bool SampleDynamicReshape::buildPredictionEngine(const SampleUniquePtr<nvinfer1:
 
     auto profileCalib = builder->createOptimizationProfile();
     const auto inputName = mParams.inputTensorNames[0].c_str();
-    const int calibBatchSize{1};
+    const int calibBatchSize{5};
     // We do not need to check the return of setDimension and setCalibrationProfile here as all dims are explicitly set
-    profileCalib->setDimensions(inputName, OptProfileSelector::kMIN, Dims4{calibBatchSize, 1, 32, 32});
-    profileCalib->setDimensions(inputName, OptProfileSelector::kOPT, Dims4{calibBatchSize, 1, 32, 32});
-    profileCalib->setDimensions(inputName, OptProfileSelector::kMAX, Dims4{calibBatchSize, 1, 32, 32});
+    profileCalib->setDimensions(inputName, OptProfileSelector::kMIN, Dims4{1, 1, 32, 32});
+    profileCalib->setDimensions(inputName, OptProfileSelector::kOPT, Dims4{16, 1, 32, 32});
+    profileCalib->setDimensions(inputName, OptProfileSelector::kMAX, Dims4{32, 1, 32, 32});
     config->setCalibrationProfile(profileCalib);
 
     std::unique_ptr<IInt8Calibrator> calibrator;
+	sample::gLogError << mParams.int8 << std::endl;
     if (mParams.int8)
     {
-        config->setFlag(BuilderFlag::kINT8);
-        int nCalibBatches{10};
+		sample::gLogError << "Entered 2" << std::endl;
+		sample::gLogError << "Inside config" << std::endl;
+		config->setFlag(BuilderFlag::kINT8);
+		sample::gLogError << "1" << std::endl;
+        int nCalibBatches{16};
+		sample::gLogError << "2" << std::endl;
         MNISTBatchStream calibrationStream(
-            calibBatchSize, nCalibBatches, "train-images-idx3-ubyte", "train-labels-idx1-ubyte", mParams.dataDirs);
+            calibBatchSize, nCalibBatches, "images", "labels", mParams.dataDirs);
+		sample::gLogError << "3" << std::endl;	
         calibrator.reset(
             new Int8EntropyCalibrator2<MNISTBatchStream>(calibrationStream, 0, "MNISTPrediction", inputName));
         config->setInt8Calibrator(calibrator.get());
+		sample::gLogError << "Entered 2" << std::endl;
     }
     // Build the prediciton engine.
     mPredictionEngine = makeUnique(builder->buildEngineWithConfig(*network, *config));
     if (!mPredictionEngine)
     {
-        sample::gLogError << "Prediction engine build failed." << std::endl;
+        sample::gLogError << "Prediction engine build failed8." << std::endl;
         return false;
     }
     return true;
@@ -268,14 +308,14 @@ bool SampleDynamicReshape::prepare()
     mPreprocessorContext = makeUnique(mPreprocessorEngine->createExecutionContext());
     if (!mPreprocessorContext)
     {
-        sample::gLogError << "Preprocessor context build failed." << std::endl;
+        sample::gLogError << "Preprocessor context build failed10." << std::endl;
         return false;
     }
 
     mPredictionContext = makeUnique(mPredictionEngine->createExecutionContext());
     if (!mPredictionContext)
     {
-        sample::gLogError << "Prediction context build failed." << std::endl;
+        sample::gLogError << "Prediction context build failed11." << std::endl;
         return false;
     }
 
@@ -283,6 +323,12 @@ bool SampleDynamicReshape::prepare()
     // buffer.
     mPredictionInput.resize(mPredictionInputDims);
     mOutput.hostBuffer.resize(mPredictionOutputDims);
+    mOutput.deviceBuffer.resize(mPredictionOutputDims);
+    mOutput.deviceBuffer.resize(mPredictionOutputDims);
+    mOutput.deviceBuffer.resize(mPredictionOutputDims);
+    mOutput.deviceBuffer.resize(mPredictionOutputDims);
+    mOutput.deviceBuffer.resize(mPredictionOutputDims);
+    mOutput.deviceBuffer.resize(mPredictionOutputDims);
     mOutput.deviceBuffer.resize(mPredictionOutputDims);
     return true;
 }
@@ -299,7 +345,7 @@ bool SampleDynamicReshape::infer()
     std::random_device rd{};
     std::default_random_engine generator{rd()};
     std::uniform_int_distribution<int> digitDistribution{0, 9};
-    int digit = digitDistribution(generator);
+    int digit = 10;
 
     Dims inputDims = loadPGMFile(locateFile(std::to_string(digit) + ".pgm", mParams.dataDirs));
     mInput.deviceBuffer.resize(inputDims);
@@ -412,8 +458,8 @@ samplesCommon::OnnxSampleParams initializeSampleParams(const samplesCommon::Args
         params.dataDirs = args.dataDirs;
     }
     params.onnxFileName = "cifar.onnx";
-    params.inputTensorNames.push_back("Input3");
-    params.outputTensorNames.push_back("Plus214_Output_0");
+    params.inputTensorNames.push_back("conv2d_input:0");
+    params.outputTensorNames.push_back("Identity:0");
     params.int8 = args.runInInt8;
     params.fp16 = args.runInFp16;
     return params;
@@ -424,12 +470,12 @@ samplesCommon::OnnxSampleParams initializeSampleParams(const samplesCommon::Args
 //!
 void printHelpInfo()
 {
-    std::cout << "Usage: ./sample_dynamic_reshape [-h or --help] [-d or --datadir=<path to data directory>]"
+    std::cout << "Usage: ./cifar [-h or --help] [-d or --datadir=<path to data directory>]"
               << std::endl;
     std::cout << "--help, -h      Display help information" << std::endl;
     std::cout << "--datadir       Specify path to a data directory, overriding the default. This option can be used "
                  "multiple times to add multiple directories. If no data directories are given, the default is to use "
-                 "(data/samples/mnist/, data/mnist/)"
+                 "(data/samples/cifar/, data/cifar/)"
               << std::endl;
     std::cout << "--int8          Run in Int8 mode." << std::endl;
     std::cout << "--fp16          Run in FP16 mode." << std::endl;
