@@ -2,6 +2,8 @@ import mxnet as mx
 import time
 import os
 
+print(1)
+
 batch_shape = (1, 3, 256, 256)
 # resnet18 = vision.resnet18_v2(pretrained=True)
 # resnet18.hybridize()
@@ -9,8 +11,9 @@ batch_shape = (1, 3, 256, 256)
 # resnet18.export('resnet18_v2')
 sym, arg_params, aux_params = mx.model.load_checkpoint('R50', 0)
 
-# Create sample input
-input = mx.nd.zeros(batch_shape)
+print(2)
+
+
  
 # Execute with MXNet
 os.environ['MXNET_USE_TENSORRT'] = '0'
