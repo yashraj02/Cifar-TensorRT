@@ -2,6 +2,7 @@ import mxnet as mx
 import time
 import os
 import cv2
+import numpy as np
 
 print(1)
 
@@ -33,6 +34,7 @@ def processing(folder = "images"):
     if img is not None:
       res = cv2.resize(img, (256, 256), interpolation=cv2.INTER_LINEAR)
       res = res[np.newaxis, ...]
+      res = np.rollaxis(res, 3, 1)
       input.append(res)
     else:
         print("no image found")
