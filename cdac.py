@@ -19,7 +19,19 @@ executor.copy_params_from(arg_params, aux_params)
 
 
 # Create sample input
-input = mx.nd.zeros(batch_shape)
+input = []
+# Preprocessing
+def processing(folder = "images"):
+  for filename in os.listdir(folder):
+    img = cv2.imread(os.path.join(folder,filename),cv2.IMREAD_UNCHANGED)
+    if img is not None:
+      res = cv2.resize(img, (256, 256), interpolation=cv2.INTER_LINEAR)
+      res = res[np.newaxis, ...]
+      input.append(res)
+    else:
+        print("no image found")
+processing()
+
  
 # Execute with MXNet
 os.environ['MXNET_USE_TENSORRT'] = '0'
@@ -29,14 +41,14 @@ executor.copy_params_from(arg_params, aux_params)
 # Warmup
 print('Warming up MXNet')
 for i in range(0, 10):
-    y_gen = executor.forward(is_train=False, data=input)
+    y_gen = executor.forward(is_train=False, data=input[i])
     y_gen[0].wait_to_read()
  
 # Timing
 print('Starting MXNet timed run')
 start = time.process_time()
-for i in range(0, 10000):
-    y_gen = executor.forward(is_train=False, data=input)
+for i in range(0, len(input)):
+    y_gen = executor.forward(is_train=False, data=input[i])
     y_gen[0].wait_to_read()
 end = time.time()
 print(time.process_time() - start)
@@ -52,14 +64,14 @@ executor = mx.contrib.tensorrt.tensorrt_bind(sym, ctx=mx.gpu(0), all_params=all_
 # Warmup
 print('Warming up TensorRT')
 for i in range(0, 10):
-    y_gen = executor.forward(is_train=False, data=input)
+    y_gen = executor.forward(is_train=False, data=input[i])
     y_gen[0].wait_to_read()
  
 # Timing
 print('Starting TensorRT timed run')
 start = time.process_time()
-for i in range(0, 10000):
-    y_gen = executor.forward(is_train=False, data=input)
+for i in range(0, len(input)):
+    y_gen = executor.forward(is_train=False, data=input[i])
     y_gen[0].wait_to_read()
 end = time.time()
 print(time.process_time() - start)
