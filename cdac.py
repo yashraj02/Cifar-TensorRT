@@ -31,6 +31,7 @@ def processing(folder = "images"):
     else:
         print("no image found")
 processing()
+print(len(input),"Images Fed")
 
  
 # Execute with MXNet
