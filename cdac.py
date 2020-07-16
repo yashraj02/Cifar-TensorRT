@@ -20,11 +20,13 @@ os.environ['MXNET_USE_TENSORRT'] = '0'
 executor = sym.simple_bind(ctx=mx.gpu(0), data=batch_shape, grad_req='null', force_rebind=True)
 executor.copy_params_from(arg_params, aux_params)
 
+print(3)
 
 # Create sample input
 input = []
 # Preprocessing
 def processing(folder = "images"):
+  print(4)
   for filename in os.listdir(folder):
     img = cv2.imread(os.path.join(folder,filename),cv2.IMREAD_UNCHANGED)
     if img is not None:
@@ -33,9 +35,11 @@ def processing(folder = "images"):
       input.append(res)
     else:
         print("no image found")
+  print(5)
 processing()
 print(len(input),"Images Fed")
 
+ 
  
 # Execute with MXNet
 os.environ['MXNET_USE_TENSORRT'] = '0'
