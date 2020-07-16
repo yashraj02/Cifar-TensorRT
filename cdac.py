@@ -7,7 +7,7 @@ batch_shape = (1, 3, 256, 256)
 # resnet18.hybridize()
 # resnet18.forward(mx.nd.zeros(batch_shape))
 # resnet18.export('resnet18_v2')
-sym, arg_params, aux_params = mx.model.load_checkpoint('/R50', 0)
+sym, arg_params, aux_params = mx.model.load_checkpoint('R50', 0)
 
 # Create sample input
 input = mx.nd.zeros(batch_shape)
