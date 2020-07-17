@@ -66,6 +66,7 @@ print(time.process_time() - start)
 
 
 # Execute with TensorRT FP32
+os.environ['MXNET_USE_TENSORRT'] = '1'
 print('Building TensorRT engine FP32')
 trt_sym = sym.get_backend_symbol('TensorRT')
 arg_params, aux_params = mx.contrib.tensorrt.init_tensorrt_params(trt_sym, arg_params, aux_params)
