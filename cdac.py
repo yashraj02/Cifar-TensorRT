@@ -65,24 +65,58 @@ end = time.time()
 print(time.process_time() - start)
 
 
-# Execute with TensorRT
-print('Building TensorRT engine')
-os.environ['MXNET_USE_TENSORRT'] = '1'
-arg_params.update(aux_params)
-all_params = dict([(k, v.as_in_context(mx.gpu(0))) for k, v in arg_params.items()])
-executor = mx.contrib.tensorrt.tensorrt_bind(sym, ctx=mx.gpu(0), all_params=all_params,
-                                             data=batch_shape, grad_req='null', force_rebind=True)
+# Execute with TensorRT FP32
+print('Building TensorRT engine FP32')
+trt_sym = sym.get_backend_symbol('TensorRT')
+arg_params, aux_params = mx.contrib.tensorrt.init_tensorrt_params(trt_sym, arg_params, aux_params)
+executor = trt_sym.simple_bind(ctx=mx.gpu(), data=batch_shape,
+                               grad_req='null', force_rebind=True)
+executor.copy_params_from(arg_params, aux_params)
 # Warmup
-print('Warming up TensorRT')
+print('Warming up TensorRT FP32')
 for i in range(0, 10):
     y_gen = executor.forward(is_train=False, data=input[i])
     y_gen[0].wait_to_read()
  
 # Timing
-print('Starting TensorRT timed run')
+print('Starting TensorRT FP32 timed run')
 start = time.process_time()
 for i in range(0, len(input)):
     y_gen = executor.forward(is_train=False, data=input[i])
     y_gen[0].wait_to_read()
 end = time.time()
 print(time.process_time() - start)
+
+tensorRt_atchitecture = executor.get_optimized_symbol()
+mx.symbol.Symbol.save(tensorRt_atchitecture, 'trt_retinaFace_fp32.json')
+
+                                             
+                                             
+# Execute with TensorRT FP16
+print('Building TensorRT engine FP16')
+trt_sym = sym.get_backend_symbol('TensorRT')
+arg_params, aux_params = mx.contrib.tensorrt.init_tensorrt_params(trt_sym, arg_params, aux_params)
+mx.contrib.tensorrt.set_use_fp16(True)
+executor = trt_sym.simple_bind(ctx=mx.gpu(), data=batch_shape,
+                               grad_req='null', force_rebind=True)
+executor.copy_params_from(arg_params, aux_params)
+                                             
+                                             
+                                           
+# Warmup
+print('Warming up TensorRT FP16')
+for i in range(0, 10):
+    y_gen = executor.forward(is_train=False, data=input[i])
+    y_gen[0].wait_to_read()
+ 
+# Timing
+print('Starting TensorRT FP16 timed run')
+start = time.process_time()
+for i in range(0, len(input)):
+    y_gen = executor.forward(is_train=False, data=input[i])
+    y_gen[0].wait_to_read()
+end = time.time()
+print(time.process_time() - start)
+
+tensorRt_atchitecture = executor.get_optimized_symbol()
+mx.symbol.Symbol.save(tensorRt_atchitecture, 'trt_retinaFace_fp16.json')
